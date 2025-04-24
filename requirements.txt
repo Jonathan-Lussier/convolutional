@@ -1,0 +1,15 @@
+#basics:
+
+#number and math manipulation
+numpy
+
+#data handling
+#pandas
+
+# this one makes pictures 
+matplotlib
+
+#this one import excel files
+#openpyxl
+
+jupyterlab
