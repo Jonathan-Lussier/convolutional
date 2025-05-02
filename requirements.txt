@@ -2,9 +2,10 @@
 
 #number and math manipulation
 numpy
+scipy
 
 #data handling
-#pandas
+pandas #just for veiwing arrays
 
 # this one makes pictures 
 matplotlib
@@ -13,3 +14,4 @@ matplotlib
 #openpyxl
 
 jupyterlab
+
