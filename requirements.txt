@@ -10,6 +10,10 @@ pandas #just for veiwing arrays
 # this one makes pictures 
 matplotlib
 
+#config
+hydra-core
+omegaconf
+
 #this one import excel files
 #openpyxl
 

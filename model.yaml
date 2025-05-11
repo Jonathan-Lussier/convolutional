@@ -1,0 +1,4 @@
+model:
+  type : convolutional
+  input_shape : [28,28]
+  
