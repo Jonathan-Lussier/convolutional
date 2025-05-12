@@ -1,23 +1,27 @@
-model:
-  type : convolutional
+type : convolutional
 
-  layers:
-    input_ly : 
-      type : "input"
-      shape : [28,28]
+layers:
+  input_ly : 
+    index : 0
+    type : "input"
+    shape : [28,28]
 
-    conv_block_1 :
-      type : "conv2D"
-      shape : [28,28]
+  conv_block_1 :
+    index : 1
+    type : "conv2D"
+    shape : [28,28]
 
-    conv_block_2 :
-      type : "conv2D"
-      shape : [14,14]
+  conv_block_2 :
+    index : 2
+    type : "conv2D"
+    shape : [14,14]
 
-    conv_block_3 :
-      type : "conv2D"
-      shape : [14,14]
+  conv_block_3 :
+    index : 3
+    type : "conv2D"
+    shape : [14,14]
 
-    output_ly:
-      type: "fc"
-      shape: [10]
+  output_ly:
+    index : 4
+    type: "fc"
+    shape: [10]
