@@ -12,8 +12,8 @@ blocks:
     index : 1
     type : "conv2D"
     shape : [28,28]
-    weights:
-      kernel_size : [3,3]
+    filters:
+      kernel_shape : [3,3]
       filter_num : 27
       stride : 1
 
@@ -21,8 +21,8 @@ blocks:
     index : 2
     type : "conv2D"
     shape : [14,14]
-    weights:
-      kernel_size : [3,3]
+    filters:
+      kernel_shape : [3,3]
       filter_num : 27
       stride : 1
 
@@ -30,8 +30,8 @@ blocks:
     index : 3
     type : "conv2D"
     shape : [14,14]
-    weights:
-      kernel_size : [3,3]
+    filters:
+      kernel_shape : [3,3]
       filter_num : 27
       stride : 1
 
