@@ -1,6 +1,6 @@
 type : convolutional
 
-layers:
+blocks:
   input_ly : 
     index : 0
     type : "input"
