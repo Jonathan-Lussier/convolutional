@@ -35,8 +35,14 @@ blocks:
       filter_num : 27
       stride : 1
 
-  output_ly:
+  fc_ly_1:
     index : 4
+    type: "fc"
+    shape: [10,10]
+    weights:
+
+  output_ly:
+    index : 5
     type: "fc"
     shape: [10]
     weights:
