@@ -21,6 +21,8 @@ blocks:
     index : 2
     type : "pool"
     shape : [14,14]
+    stride : 2
+    mode : "max"
 
   conv_block_2 :
     index : 3
