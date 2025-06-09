@@ -14,7 +14,7 @@ blocks:
     shape : [28,28]
     filters:
       kernel_shape : [3,3]
-      filter_num : 27
+      filter_num : 21
       stride : 1
 
   pool_block_1:
@@ -39,7 +39,7 @@ blocks:
     shape : [14,14]
     filters:
       kernel_shape : [3,3]
-      filter_num : 27
+      filter_num : 9
       stride : 1
 
   fc_ly_1:
