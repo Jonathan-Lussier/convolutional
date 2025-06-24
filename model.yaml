@@ -45,13 +45,13 @@ blocks:
   fc_ly_1:
     index : 5
     type: "fc"
-    shape: [100,100]
+    shape: [10,10]
     weights:
 
   fc_ly_2:
     index : 6
     type: "fc"
-    shape: [1000]
+    shape: [100]
     weights:
 
   output_ly:
