@@ -33,29 +33,36 @@ blocks:
       filter_num : 27
       stride : 1
 
-  conv_block_3 :
+  pool_block_2:
     index : 4
+    type : "pool"
+    shape : [7,7]
+    stride : 2
+    mode : "max"
+
+  conv_block_3 :
+    index : 5
     type : "conv2D"
-    shape : [14,14]
+    shape : [7,7]
     filters:
       kernel_shape : [3,3]
       filter_num : 9
       stride : 1
 
   fc_ly_1:
-    index : 5
+    index : 6
     type: "fc"
     shape: [10,10]
     weights:
 
   fc_ly_2:
-    index : 6
+    index : 7
     type: "fc"
     shape: [100]
     weights:
 
   output_ly:
-    index : 7
+    index : 8
     type: "fc"
     shape: [10]
     weights:
