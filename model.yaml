@@ -14,7 +14,7 @@ blocks:
     shape : [28,28]
     filters:
       kernel_shape : [3,3]
-      filter_num : 10
+      filter_num : 5
       stride : 1
 
   pool_block_1:
@@ -30,7 +30,7 @@ blocks:
     shape : [14,14]
     filters:
       kernel_shape : [3,3]
-      filter_num : 10
+      filter_num : 5
       stride : 1
 
   pool_block_2:
@@ -46,13 +46,13 @@ blocks:
     shape : [7,7]
     filters:
       kernel_shape : [3,3]
-      filter_num : 10
+      filter_num : 5
       stride : 1
 
   fc_ly_1:
     index : 6
     type: "fc"
-    shape: [7,7]
+    shape: [4,4]
     weights:
 
   output_ly:
