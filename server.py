@@ -79,15 +79,80 @@ class DashboardHandler(BaseHTTPRequestHandler):
     <script>
         const ctx = document.getElementById("graph").getContext("2d");
         function drawGraph(history) {
-            ctx.clearRect(0, 0, 600, 300);
+            const canvas = document.getElementById("graph");
+            const ctx = canvas.getContext("2d");
+
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            if (history.length < 2) return;
+
+            const maxLoss = Math.max(...history);
+            const minLoss = Math.min(...history);
+            const range = maxLoss - minLoss || 1e-6;
+
+            const padding = 40;
+            const graphWidth = width - padding * 2;
+            const graphHeight = height - padding * 2;
+
+            // Draw Y axis grid + labels
+            ctx.strokeStyle = "#ddd";
+            ctx.fillStyle = "#666";
+            ctx.font = "12px sans-serif";
+            ctx.textAlign = "right";
+
+            const yTicks = 5;
+            for (let i = 0; i <= yTicks; i++) {
+                const norm = i / yTicks;
+                const y = padding + norm * graphHeight;
+                const value = (maxLoss - norm * range).toFixed(4);
+
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+
+                ctx.fillText(value, padding - 5, y + 4);
+            }
+
+            // Draw X axis grid + labels
+            const xTicks = 5;
+            ctx.textAlign = "center";
+            for (let i = 0; i <= xTicks; i++) {
+                const frac = i / xTicks;
+                const x = padding + frac * graphWidth;
+                const step = Math.round(frac * (history.length - 1));
+
+                ctx.beginPath();
+                ctx.moveTo(x, padding);
+                ctx.lineTo(x, height - padding);
+                ctx.stroke();
+
+                ctx.fillText(step, x, height - padding + 15);
+            }
+
+            // Draw line plot
             ctx.beginPath();
-            ctx.moveTo(0, 300 - history[0] * 300);
-            for (let i = 1; i < history.length; i++) {
-                let x = (i / history.length) * 600;
-                let y = 300 - history[i] * 300;
-                ctx.lineTo(x, y);
+            for (let i = 0; i < history.length; i++) {
+                const x = padding + (i / (history.length - 1)) * graphWidth;
+                const norm = (history[i] - minLoss) / range;
+                const y = padding + (1 - norm) * graphHeight;
+
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
             }
             ctx.strokeStyle = "blue";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw axes
+            ctx.strokeStyle = "#444";
+            ctx.beginPath();
+            ctx.moveTo(padding, padding);
+            ctx.lineTo(padding, height - padding);
+            ctx.lineTo(width - padding, height - padding);
             ctx.stroke();
         }
 
@@ -97,6 +162,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 .then(data => {
                     document.getElementById("variables").innerHTML = `
                         <b>Epoch:</b> ${data.epoch} <br/>
+                        <b>dW:</b> ${data.current_dW} <br/>
                         <b>Loss:</b> ${data.loss.toFixed(6)}
                     `;
                     document.getElementById("warnings").innerHTML = data.warnings.map(w => `<li>${w}</li>`).join("");
