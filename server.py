@@ -11,6 +11,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
         super().__init__(*args, **kwargs)
 
     def do_GET(self):
+        print(f"🟡 Received GET: {self.path}")
         if self.path == "/":
             self.send_response(200)
             self.send_header("Content-type", "text/html")
