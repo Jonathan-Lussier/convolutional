@@ -70,17 +70,16 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <h2>Log</h2>
         <pre id="log"></pre>
     </div>
-    
-    <div class="section">
-        <h2>activations</h2>
-        <canvas id="activations_graph" width="600" height="300"></canvas>
-    </div>
 
     <div class="section">
         <h2>Loss Graph</h2>
         <canvas id="loss_graph" width="600" height="300"></canvas>
     </div>
-
+    
+    <div class="section">
+        <h2>Activations</h2>
+        <canvas id="activations_graph" width="600" height="300"></canvas>
+    </div>
     <div class="section">
         <h2>dW</h2>
         <canvas id="dW_graph" width="600" height="300"></canvas>
