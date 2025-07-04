@@ -77,11 +77,14 @@ class DashboardHandler(BaseHTTPRequestHandler):
     </div>
 
     <script>
-        const ctx = document.getElementById("graph").getContext("2d");
-        function drawGraph(history) {
-            const canvas = document.getElementById("graph");
-            const ctx = canvas.getContext("2d");
+        const canvas = document.getElementById("graph");
+        const ctx = canvas.getContext("2d");
+        let currentHistory = [];
 
+        canvas.addEventListener("mousemove", handleHover);
+
+        function drawGraph(history) {
+            currentHistory = history;  // Store for hover
             const width = canvas.width;
             const height = canvas.height;
 
@@ -89,15 +92,15 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
             if (history.length < 2) return;
 
+            const padding = 50;
+            const graphWidth = width - padding * 2;
+            const graphHeight = height - padding * 2;
+
             const maxLoss = Math.max(...history);
             const minLoss = Math.min(...history);
             const range = maxLoss - minLoss || 1e-6;
 
-            const padding = 40;
-            const graphWidth = width - padding * 2;
-            const graphHeight = height - padding * 2;
-
-            // Draw Y axis grid + labels
+            // Grid + Y-axis labels
             ctx.strokeStyle = "#ddd";
             ctx.fillStyle = "#666";
             ctx.font = "12px sans-serif";
@@ -107,7 +110,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             for (let i = 0; i <= yTicks; i++) {
                 const norm = i / yTicks;
                 const y = padding + norm * graphHeight;
-                const value = (maxLoss - norm * range).toFixed(4);
+                const value = (maxLoss - norm * range).toFixed(2);
 
                 ctx.beginPath();
                 ctx.moveTo(padding, y);
@@ -117,7 +120,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 ctx.fillText(value, padding - 5, y + 4);
             }
 
-            // Draw X axis grid + labels
+            // Grid + X-axis labels
             const xTicks = 5;
             ctx.textAlign = "center";
             for (let i = 0; i <= xTicks; i++) {
@@ -130,10 +133,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 ctx.lineTo(x, height - padding);
                 ctx.stroke();
 
-                ctx.fillText(step, x, height - padding + 15);
+                ctx.fillText(step, x, height - padding + 20);
             }
 
-            // Draw line plot
+            // Line plot
             ctx.beginPath();
             for (let i = 0; i < history.length; i++) {
                 const x = padding + (i / (history.length - 1)) * graphWidth;
@@ -147,14 +150,73 @@ class DashboardHandler(BaseHTTPRequestHandler):
             ctx.lineWidth = 2;
             ctx.stroke();
 
-            // Draw axes
+            // Axes
             ctx.strokeStyle = "#444";
             ctx.beginPath();
             ctx.moveTo(padding, padding);
             ctx.lineTo(padding, height - padding);
             ctx.lineTo(width - padding, height - padding);
             ctx.stroke();
+
+            // Axis labels
+            ctx.fillStyle = "#000";
+            ctx.font = "14px sans-serif";
+
+            ctx.fillText("Epoch", width / 2, height - 10);
+
+            ctx.save();
+            ctx.translate(15, height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText("Loss", 0, 0);
+            ctx.restore();
         }
+
+        function handleHover(event) {
+            if (currentHistory.length < 2) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const xMouse = event.clientX - rect.left;
+            const yMouse = event.clientY - rect.top;
+
+            const padding = 50;
+            const graphWidth = canvas.width - padding * 2;
+            const graphHeight = canvas.height - padding * 2;
+
+            const index = Math.round((xMouse - padding) / graphWidth * (currentHistory.length - 1));
+            if (index < 0 || index >= currentHistory.length) return;
+
+            const maxLoss = Math.max(...currentHistory);
+            const minLoss = Math.min(...currentHistory);
+            const range = maxLoss - minLoss || 1e-6;
+
+            const x = padding + (index / (currentHistory.length - 1)) * graphWidth;
+            const norm = (currentHistory[index] - minLoss) / range;
+            const y = padding + (1 - norm) * graphHeight;
+
+            // Redraw graph
+            drawGraph(currentHistory);
+
+            // Crosshair
+            ctx.strokeStyle = "red";
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(x, padding);
+            ctx.lineTo(x, canvas.height - padding);
+            ctx.moveTo(padding, y);
+            ctx.lineTo(canvas.width - padding, y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Tooltip
+            const tooltip = `Epoch: ${index} | Loss: ${currentHistory[index].toFixed(4)}`;
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(x + 8, y - 24, ctx.measureText(tooltip).width + 10, 20);
+            ctx.strokeStyle = "#000";
+            ctx.strokeRect(x + 8, y - 24, ctx.measureText(tooltip).width + 10, 20);
+            ctx.fillStyle = "#000";
+            ctx.fillText(tooltip, x + 13, y - 10);
+        }
+
 
         function updateDashboard() {
             fetch("/vars")
