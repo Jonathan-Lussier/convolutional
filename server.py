@@ -70,37 +70,61 @@ class DashboardHandler(BaseHTTPRequestHandler):
         <h2>Log</h2>
         <pre id="log"></pre>
     </div>
+    
+    <div class="section">
+        <h2>activations</h2>
+        <canvas id="activations_graph" width="600" height="300"></canvas>
+    </div>
 
     <div class="section">
         <h2>Loss Graph</h2>
-        <canvas id="graph" width="600" height="300"></canvas>
+        <canvas id="loss_graph" width="600" height="300"></canvas>
     </div>
 
+    <div class="section">
+        <h2>dW</h2>
+        <canvas id="dW_graph" width="600" height="300"></canvas>
+    </div>
+
+    <div class="section">
+        <h2>dB</h2>
+        <canvas id="dB_graph" width="600" height="300"></canvas>
+    </div>
+
+
+
+
+
+
+
+
+
     <script>
-        const canvas = document.getElementById("graph");
-        const ctx = canvas.getContext("2d");
-        let currentHistory = [];
+        const graphState = {};  // Track lines per canvas for hover
 
-        canvas.addEventListener("mousemove", handleHover);
+        function drawGraphMulti(canvasId, lines, labelY = "") {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
 
-        function drawGraph(history) {
-            currentHistory = history;  // Store for hover
             const width = canvas.width;
             const height = canvas.height;
+            const padding = 50;
+
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            // Flatten all data for bounds
+            const allData = lines.flatMap(line => line.data);
+            if (allData.length < 2) return;
+
+            const maxY = Math.max(...allData);
+            const minY = Math.min(...allData);
+            const range = maxY - minY || 1e-6;
 
             ctx.clearRect(0, 0, width, height);
 
-            if (history.length < 2) return;
-
-            const padding = 50;
-            const graphWidth = width - padding * 2;
-            const graphHeight = height - padding * 2;
-
-            const maxLoss = Math.max(...history);
-            const minLoss = Math.min(...history);
-            const range = maxLoss - minLoss || 1e-6;
-
-            // Grid + Y-axis labels
+            // Draw grid and Y labels
             ctx.strokeStyle = "#ddd";
             ctx.fillStyle = "#666";
             ctx.font = "12px sans-serif";
@@ -110,47 +134,54 @@ class DashboardHandler(BaseHTTPRequestHandler):
             for (let i = 0; i <= yTicks; i++) {
                 const norm = i / yTicks;
                 const y = padding + norm * graphHeight;
-                const value = (maxLoss - norm * range).toFixed(2);
-
+                const value = (maxY - norm * range).toFixed(2);
                 ctx.beginPath();
                 ctx.moveTo(padding, y);
                 ctx.lineTo(width - padding, y);
                 ctx.stroke();
-
-                ctx.fillText(value, padding - 5, y + 4);
+                ctx.fillText(value, padding - 10, y + 4);
             }
 
-            // Grid + X-axis labels
+            // Draw X ticks
             const xTicks = 5;
             ctx.textAlign = "center";
+            const maxLen = Math.max(...lines.map(l => l.data.length));
             for (let i = 0; i <= xTicks; i++) {
                 const frac = i / xTicks;
                 const x = padding + frac * graphWidth;
-                const step = Math.round(frac * (history.length - 1));
-
+                const step = Math.round(frac * (maxLen - 1));
                 ctx.beginPath();
                 ctx.moveTo(x, padding);
                 ctx.lineTo(x, height - padding);
                 ctx.stroke();
-
                 ctx.fillText(step, x, height - padding + 20);
             }
 
-            // Line plot
-            ctx.beginPath();
-            for (let i = 0; i < history.length; i++) {
-                const x = padding + (i / (history.length - 1)) * graphWidth;
-                const norm = (history[i] - minLoss) / range;
-                const y = padding + (1 - norm) * graphHeight;
+            graphState[canvasId] = {
+                lines,
+                maxY,
+                minY,
+                padding,
+                width,
+                height
+            };
 
-                if (i === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            }
-            ctx.strokeStyle = "blue";
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            // Plot each line
+            lines.forEach(({ data, color }) => {
+                ctx.beginPath();
+                for (let i = 0; i < data.length; i++) {
+                    const x = padding + (i / (data.length - 1)) * graphWidth;
+                    const norm = (data[i] - minY) / range;
+                    const y = padding + (1 - norm) * graphHeight;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
 
-            // Axes
+            // Draw axes
             ctx.strokeStyle = "#444";
             ctx.beginPath();
             ctx.moveTo(padding, padding);
@@ -158,65 +189,74 @@ class DashboardHandler(BaseHTTPRequestHandler):
             ctx.lineTo(width - padding, height - padding);
             ctx.stroke();
 
-            // Axis labels
+            // Label Y-axis
             ctx.fillStyle = "#000";
             ctx.font = "14px sans-serif";
-
-            ctx.fillText("Epoch", width / 2, height - 10);
-
             ctx.save();
             ctx.translate(15, height / 2);
             ctx.rotate(-Math.PI / 2);
-            ctx.fillText("Loss", 0, 0);
+            ctx.fillText(labelY, 0, 0);
             ctx.restore();
         }
 
-        function handleHover(event) {
-            if (currentHistory.length < 2) return;
+
+        document.querySelectorAll("canvas").forEach(canvas => {
+            canvas.addEventListener("mousemove", (event) => handleMultiHover(canvas, event));
+        });
+
+        function handleMultiHover(canvas, event) {
+            const ctx = canvas.getContext("2d");
+            const { lines, maxY, minY, padding, width, height } = graphState[canvas.id] || {};
+            if (!lines || lines.length === 0) return;
+
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
 
             const rect = canvas.getBoundingClientRect();
             const xMouse = event.clientX - rect.left;
-            const yMouse = event.clientY - rect.top;
 
-            const padding = 50;
-            const graphWidth = canvas.width - padding * 2;
-            const graphHeight = canvas.height - padding * 2;
+            const maxLen = Math.max(...lines.map(l => l.data.length));
+            const index = Math.round((xMouse - padding) / graphWidth * (maxLen - 1));
+            if (index < 0 || index >= maxLen) return;
 
-            const index = Math.round((xMouse - padding) / graphWidth * (currentHistory.length - 1));
-            if (index < 0 || index >= currentHistory.length) return;
+            ctx.clearRect(0, 0, width, height);
+            drawGraphMulti(canvas.id, lines); // Redraw everything
 
-            const maxLoss = Math.max(...currentHistory);
-            const minLoss = Math.min(...currentHistory);
-            const range = maxLoss - minLoss || 1e-6;
-
-            const x = padding + (index / (currentHistory.length - 1)) * graphWidth;
-            const norm = (currentHistory[index] - minLoss) / range;
-            const y = padding + (1 - norm) * graphHeight;
-
-            // Redraw graph
-            drawGraph(currentHistory);
+            const x = padding + (index / (maxLen - 1)) * graphWidth;
 
             // Crosshair
             ctx.strokeStyle = "red";
             ctx.setLineDash([5, 5]);
             ctx.beginPath();
             ctx.moveTo(x, padding);
-            ctx.lineTo(x, canvas.height - padding);
-            ctx.moveTo(padding, y);
-            ctx.lineTo(canvas.width - padding, y);
+            ctx.lineTo(x, height - padding);
             ctx.stroke();
             ctx.setLineDash([]);
 
             // Tooltip
-            const tooltip = `Epoch: ${index} | Loss: ${currentHistory[index].toFixed(4)}`;
-            ctx.fillStyle = "#fff";
-            ctx.fillRect(x + 8, y - 24, ctx.measureText(tooltip).width + 10, 20);
-            ctx.strokeStyle = "#000";
-            ctx.strokeRect(x + 8, y - 24, ctx.measureText(tooltip).width + 10, 20);
-            ctx.fillStyle = "#000";
-            ctx.fillText(tooltip, x + 13, y - 10);
-        }
+            const tooltipLines = [`Epoch: ${index}`];
+            let yTooltip = padding;
 
+            lines.forEach(({ data, color }, i) => {
+                if (index < data.length) {
+                    const value = data[index];
+                    const norm = (value - minY) / (maxY - minY || 1e-6);
+                    const y = padding + (1 - norm) * graphHeight;
+
+                    tooltipLines.push(`${color}: ${value.toFixed(4)}`);
+                    yTooltip = y;
+                }
+            });
+
+            const tooltip = tooltipLines.join(" | ");
+            ctx.fillStyle = "#fff";
+            const tooltipWidth = ctx.measureText(tooltip).width + 10;
+            ctx.fillRect(x + 8, yTooltip - 24, tooltipWidth, 20);
+            ctx.strokeStyle = "#000";
+            ctx.strokeRect(x + 8, yTooltip - 24, tooltipWidth, 20);
+            ctx.fillStyle = "#000";
+            ctx.fillText(tooltip, x + 13, yTooltip - 10);
+        }
 
         function updateDashboard() {
             fetch("/vars")
@@ -230,7 +270,24 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     document.getElementById("warnings").innerHTML = data.warnings.map(w => `<li>${w}</li>`).join("");
                     document.getElementById("log").innerText = data.log.slice(-20).join("\\n");
                     if (data.history && data.history.length > 1) {
-                        drawGraph(data.history);
+                        drawGraphMulti("loss_graph", [
+                            { data: data.history || [], color: "blue" },
+                        ], "Loss");
+                        drawGraphMulti("dW_graph", [
+                            { data: data.dW_history_max || [], color: "blue" },
+                            { data: data.dW_history_mean || [], color: "orange" },
+                            { data: data.dW_history_min || [], color: "red" }
+                        ], "dW");
+                        drawGraphMulti("dB_graph", [
+                            { data: data.dB_history_max || [], color: "blue" },
+                            { data: data.dB_history_mean || [], color: "orange" },
+                            { data: data.dB_history_min || [], color: "red" }
+                        ], "dB");
+                        drawGraphMulti("activations_graph", [
+                            { data: data.act_history_max || [], color: "blue" },
+                            { data: data.act_history_mean || [], color: "orange" },
+                            { data: data.act_history_min || [], color: "red" }
+                        ], "activations");
                     }
                 });
         }
