@@ -1,0 +1,13 @@
+type: convolutional
+learning_rate: 1.0e-05
+batch_size: 100
+image_size:
+- 28
+- 28
+dataset_size: 600
+epochs: 1
+images_path: MNIST/train-images.idx3-ubyte
+labels_path: MNIST/train-labels.idx1-ubyte
+leaky_ReLU_alpha: 0.2
+runtime: 9
+date: 07_07_2025_22-10-35
