@@ -6,6 +6,7 @@ blocks:
     type : "input"
     shape : [28,28]
     weights:
+    flags: 
 
 
   conv_block_1 :
@@ -16,6 +17,7 @@ blocks:
       kernel_shape : [3,3]
       filter_num : 5
       stride : 1
+    flags: 
 
   pool_block_1:
     index : 2
@@ -23,6 +25,7 @@ blocks:
     shape : [14,14]
     stride : 2
     mode : "max"
+    flags: 
 
   conv_block_2 :
     index : 3
@@ -32,6 +35,7 @@ blocks:
       kernel_shape : [3,3]
       filter_num : 5
       stride : 1
+    flags: 
 
   pool_block_2:
     index : 4
@@ -39,6 +43,7 @@ blocks:
     shape : [7,7]
     stride : 2
     mode : "max"
+    flags: 
 
   conv_block_3 :
     index : 5
@@ -48,16 +53,20 @@ blocks:
       kernel_shape : [3,3]
       filter_num : 5
       stride : 1
+    flags: 
 
   fc_ly_1:
     index : 6
     type: "fc"
     shape: [4,4]
     weights:
-
+    flags: 
+      
   output_ly:
     index : 7
     type: "fc"
     shape: [10]
     weights:
+    flags: 
+      output : true
       

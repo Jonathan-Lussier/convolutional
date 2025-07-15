@@ -1,10 +1,10 @@
 type : convolutional
 
-learning_rate: 0.00001
-batch_size: 100
+learning_rate: 0.001
+batch_size: 50
 image_size: [28,28]
-dataset_size: 600
+dataset_size: 100
 epochs: 100
 images_path: "MNIST/train-images.idx3-ubyte"
 labels_path: "MNIST/train-labels.idx1-ubyte"
-leaky_ReLU_alpha : 0.2
+leaky_ReLU_alpha : 0.01
