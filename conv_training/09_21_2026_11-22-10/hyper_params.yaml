@@ -9,5 +9,5 @@ epochs: 50
 images_path: MNIST/train-images.idx3-ubyte
 labels_path: MNIST/train-labels.idx1-ubyte
 leaky_ReLU_alpha: 0.01
-runtime: -1
+runtime: 8337
 date: 09_21_2026_11-22-10

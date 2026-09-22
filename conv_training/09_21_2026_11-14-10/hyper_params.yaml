@@ -5,9 +5,9 @@ image_size:
 - 28
 - 28
 dataset_size: 60000
-epochs: 50
+epochs: 2
 images_path: MNIST/train-images.idx3-ubyte
 labels_path: MNIST/train-labels.idx1-ubyte
 leaky_ReLU_alpha: 0.01
-runtime: -1
-date: 09_21_2026_11-22-10
+runtime: 307
+date: 09_21_2026_11-14-10
